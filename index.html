@@ -88,7 +88,7 @@ emerge --ask app-misc/cube</code></pre></dd>
 						<dt>source</dt>
 						<dd><pre><code>git clone --depth 1 https://github.com/noahburchell/cube.git
 cd cube
-make -j"$(nproc)"
+make -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
 sudo make install</code></pre></dd>
 					</dl>
 				</div>
