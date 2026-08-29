@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cube</title>
+<meta name="description" content="how to install cube">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+	<a class="brand" href="/">nburch.org</a>
+</header>
+
+<main class="main doc">
+
+	<section class="intro">
+		<h1>installing cube</h1>
+		<p>spinning cube (and the other platonic solids) for your terminal</p>
+	</section>
+
+	<section id="gentoo">
+		<details class="drop">
+			<summary>gentoo</summary>
+			<pre><code>emerge --ask app-eselect/eselect-repository
+eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
+emaint sync --repo noahburchell
+emerge --ask app-misc/cube
+cube --help</code></pre>
+		</details>
+	</section>
+
+	<section id="nix">
+		<details class="drop">
+			<summary>nix</summary>
+
+			<p>run it without installing anything:</p>
+			<pre><code>nix run github:noahburchell/cube
+nix run github:noahburchell/cube -- --icosahedron</code></pre>
+
+			<p>install it into your profile:</p>
+			<pre><code>nix profile install github:noahburchell/cube</code></pre>
+
+			<p>or add it to a flake:</p>
+			<pre><code>{
+  inputs.cube.url = "github:noahburchell/cube";
+
+  # then, in your config:
+  #   environment.systemPackages = [ inputs.cube.packages.${pkgs.system}.default ];
+  # or, with the overlay:
+  #   nixpkgs.overlays = [ inputs.cube.overlays.default ];
+  #   environment.systemPackages = [ pkgs.cube ];
+}</code></pre>
+		</details>
+	</section>
+
+	<section id="brew">
+		<details class="drop">
+			<summary>brew (macos)</summary>
+			<p>you need xcode 16.3+ (apple clang 17).</p>
+			<pre><code>brew install noahburchell/cube/cube</code></pre>
+		</details>
+	</section>
+
+	<section id="source">
+		<details class="drop">
+			<summary>source</summary>
+			<p>you need make (<code>gmake</code> on the bsds) and gcc 14+ or clang 19+.</p>
+
+			<h3>get the source</h3>
+			<p>grab the release tarball:</p>
+			<pre><code>curl -LO https://github.com/noahburchell/cube/archive/refs/tags/v1.2.tar.gz
+tar xf v1.2.tar.gz
+cd cube-1.2</code></pre>
+
+			<p>or clone the repo:</p>
+			<pre><code>git clone --depth 1 https://github.com/noahburchell/cube.git
+cd cube</code></pre>
+
+			<details class="drop">
+				<summary>linux</summary>
+				<pre><code>make -j"$(nproc)"
+sudo make install
+cube --help</code></pre>
+				<p><code>make install</code> puts the binary in <code>/usr/bin</code>. if you don't have root, or
+				you just don't want it there:</p>
+				<pre><code>make install PREFIX="$HOME/.local" # make sure its in path</code></pre>
+			</details>
+
+			<details class="drop">
+				<summary>macos</summary>
+				<p>you need xcode 16.3+ (apple clang 17). older xcode accepts <code>-std=gnu23</code>
+				but has no c23 <code>constexpr</code>, so the build will fail. if that happens:</p>
+				<pre><code>brew install llvm
+make CC="$(brew --prefix llvm)/bin/clang"</code></pre>
+				<p>homebrew <code>gcc</code> works too. then:</p>
+				<pre><code>make -j"$(sysctl -n hw.ncpu)"
+sudo make install
+cube --help</code></pre>
+			</details>
+
+			<details class="drop">
+				<summary>bsd</summary>
+				<pre><code>gmake -j"$(sysctl -n hw.ncpu)"
+sudo gmake install
+cube --help</code></pre>
+				<p>freebsd 14.2+ has a new enough clang in base. on openbsd and netbsd, install one
+				from packages/pkgsrc and the makefile will find it on its own: it looks for
+				<code>clang19</code>, <code>clang20</code>, <code>gcc14</code>, <code>gcc15</code> and <code>egcc</code> on path.</p>
+			</details>
+		</details>
+	</section>
+
+	<section id="usage">
+		<details class="drop">
+			<summary>usage</summary>
+			<pre><code>usage: cube [option]
+
+options:
+  -h, --help          show this help
+
+shapes:
+  -c, --cube          (default)
+  -t, --tetrahedron
+  -o, --octahedron
+  -d, --dodecahedron
+  -i, --icosahedron
+
+q or esc quits</code></pre>
+		</details>
+	</section>
+
+</main>
+
+<footer class="site-footer">
+	<p class="status">(c) 2026 noah burchell</p>
+</footer>
+
+</body>
+</html>

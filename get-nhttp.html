@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nhttp</title>
+<meta name="description" content="how to install nhttp">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+	<a class="brand" href="/">nburch.org</a>
+</header>
+
+<main class="main doc">
+
+	<section class="intro">
+		<h1>installing nhttp</h1>
+		<p>minimal http server</p>
+	</section>
+
+	<section id="gentoo">
+		<details class="drop">
+			<summary>gentoo</summary>
+			<p>the only place it is packaged.</p>
+			<pre><code>emerge --ask app-eselect/eselect-repository
+eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
+emaint sync --repo noahburchell
+emerge --ask app-misc/nhttp</code></pre>
+		</details>
+	</section>
+
+	<section id="source">
+		<details class="drop">
+			<summary>source</summary>
+			<p>linux only. you need make and gcc or clang (c11, plus
+			<code>-fstack-clash-protection</code> and <code>-fcf-protection=full</code>, so gcc 8+ or clang 11+).</p>
+
+			<h3>get the source</h3>
+			<p>grab the release tarball:</p>
+			<pre><code>curl -LO https://github.com/noahburchell/nhttp/archive/refs/tags/v1.3.tar.gz
+tar xf v1.3.tar.gz
+cd nhttp-1.3</code></pre>
+
+			<p>or clone the repo:</p>
+			<pre><code>git clone --depth 1 https://github.com/noahburchell/nhttp.git
+cd nhttp</code></pre>
+
+			<h3>build it</h3>
+			<pre><code>make
+sudo make install</code></pre>
+			<p>that puts the binary in <code>/usr/bin</code>. to put it somewhere else:</p>
+			<pre><code>make install PREFIX="$HOME/.local" # make sure its in path</code></pre>
+			<p><code>BINDIR</code> and <code>DESTDIR</code> work too. <code>make uninstall</code> removes it,
+			<code>make clean</code> drops the binary.</p>
+			<p>the hardening flags are set by the makefile and are not optional. <code>CC</code>,
+			<code>CFLAGS</code>, <code>CPPFLAGS</code> and <code>LDFLAGS</code> are appended to, so overriding
+			them is safe:</p>
+			<pre><code>make CC=clang CFLAGS="-O3 -march=native"</code></pre>
+		</details>
+	</section>
+
+	<section id="usage">
+		<details class="drop">
+			<summary>usage</summary>
+			<pre><code>nhttp &lt;docroot&gt;</code></pre>
+			<p>serves that dir. any dir path resolves to its <code>index.html</code>. GET and HEAD
+			only, everything else is a 405.</p>
+			<p>it listens on port 80, so it needs root or the net_bind_service capability:</p>
+			<pre><code>sudo setcap cap_net_bind_service=+ep /usr/bin/nhttp</code></pre>
+			<p>that is the recommended way. nhttp does not drop privileges, so under <code>sudo</code>
+			every forked request handler stays root.</p>
+			<p>the port, the 10s read/write timeout, the 8192 byte header cap and the 128
+			connection limit are compile-time constants. changing them means editing
+			<code>src/main.c</code> and rebuilding. it is ipv4 only.</p>
+		</details>
+	</section>
+
+</main>
+
+<footer class="site-footer">
+	<p class="status">(c) 2026 noah burchell</p>
+</footer>
+
+</body>
+</html>

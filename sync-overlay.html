@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>overlay</title>
+<meta name="description" content="how to sync my portage overlay">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+	<a class="brand" href="/">nburch.org</a>
+</header>
+
+<main class="main doc">
+
+	<section class="intro">
+		<h1>syncing my overlay</h1>
+		<p>portage overlay, gentoo only</p>
+	</section>
+
+	<section id="packages">
+		<details class="drop">
+			<summary>packages</summary>
+			<pre><code>app-misc/cube             spinning cube (and platonic solids)
+app-misc/nhttp            minimal http server
+app-misc/vufetch          very useful fetch (live ebuild only, no release yet)
+app-misc/claude-desktop   PROPRIETARY, repackaged anthropic's official .deb</code></pre>
+		</details>
+	</section>
+
+	<section id="eselect">
+		<details class="drop">
+			<summary>with eselect repository</summary>
+			<pre><code>emerge --ask app-eselect/eselect-repository
+eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
+emaint sync --repo noahburchell</code></pre>
+		</details>
+	</section>
+
+	<section id="manual">
+		<details class="drop">
+			<summary>manually</summary>
+			<p>create <code>/etc/portage/repos.conf/noahburchell.conf</code>:</p>
+			<pre><code>[noahburchell]
+location = /var/db/repos/noahburchell
+sync-type = git
+sync-uri = https://github.com/noahburchell/noahburchell-overlay.git
+auto-sync = yes</code></pre>
+			<p>then:</p>
+			<pre><code>emaint sync --repo noahburchell</code></pre>
+		</details>
+	</section>
+
+	<section id="installing">
+		<details class="drop">
+			<summary>installing</summary>
+			<pre><code>emerge --ask app-misc/cube</code></pre>
+			<p><code>app-misc/claude-desktop</code> is proprietary, so portage will refuse to merge it
+			until you accept the licence:</p>
+			<pre><code>echo 'app-misc/claude-desktop all-rights-reserved' >> /etc/portage/package.license
+emerge --ask app-misc/claude-desktop</code></pre>
+		</details>
+	</section>
+
+</main>
+
+<footer class="site-footer">
+	<p class="status">(c) 2026 noah burchell</p>
+</footer>
+
+</body>
+</html>

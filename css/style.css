@@ -1,12 +1,22 @@
+@font-face {
+	font-family: 'Px437 IBM VGA 8x16';
+	src: url('../assets/fonts/Px437_IBM_VGA_8x16.ttf') format('truetype');
+	font-display: swap;
+}
+
 :root {
-	--bg: #0f0f0f;
-	--fg: #c9c9c9;
-	--dim: #6f6f6f;
-	--accent: #659ad2;
-	--rule: #262626;
-	--inset: #161616;
-	--gutter: 30pt;
+	--bg: #000000;
+	--fg: #aaaaaa;
+	--bright: #ffffff;
+	--dim: #555555;
+	--accent: #55ffff;
+	--rule: #555555;
+	--wip: #ff5555;
+	--gutter: 32px;
 	--measure: 80ch;
+
+	/* swap the wide layout: name the demo first in both rows to flip sides */
+	--layout: "intro demo" "docs demo";
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -19,17 +29,28 @@ html {
 
 body {
 	margin: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 	padding: var(--gutter);
 	background: var(--bg);
 	color: var(--fg);
-	font-family: 'Fira Code', ui-monospace, monospace;
-	font-size: 15px;
-	line-height: 1.6;
+	font-family: 'Px437 IBM VGA 8x16', ui-monospace, monospace;
+	font-size: 16px;
+	line-height: 1;
+	-webkit-font-smoothing: none;
+	font-smooth: never;
 }
 
 .site-header, .main, .site-footer {
+	width: 100%;
 	max-width: var(--measure);
 	margin-inline: auto;
+}
+
+::selection {
+	background: var(--fg);
+	color: var(--bg);
 }
 
 a {
@@ -44,9 +65,9 @@ a:hover, a:focus-visible {
 .site-header {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1rem 2ch;
+	gap: 16px;
 	justify-content: space-between;
-	padding-bottom: 1rem;
+	padding-bottom: 16px;
 	border-bottom: 1px solid var(--rule);
 }
 
@@ -54,34 +75,33 @@ a:hover, a:focus-visible {
 	color: var(--fg);
 }
 
-.nav {
-	display: flex;
-	gap: 2ch;
-}
-
 h1, h2, h3, h4 {
 	font-size: inherit;
-	font-weight: 700;
+	font-weight: 400;
 	margin: 0;
 }
 
 h2 {
 	color: var(--dim);
-	letter-spacing: 0.1ch;
 }
 
-.main > section {
-	margin-top: 2.5rem;
+.main {
+	flex: 1 0 auto;
+}
+
+.main > section, .col > section {
+	margin-top: 32px;
 }
 
 .intro h1 {
-	color: var(--accent);
+	color: var(--bright);
 }
 
 #cube {
 	margin: 0;
-	height: 60vh;
-	max-height: 30rem;
+	width: 100%;
+	aspect-ratio: 1;
+	max-height: round(down, 70vh, 16px);
 	overflow: hidden;
 	font-family: inherit;
 	font-variant-ligatures: none;
@@ -92,19 +112,19 @@ h2 {
 .demo-controls {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1ch;
-	margin-top: 1rem;
+	gap: 8px;
+	margin-top: 16px;
 }
 
 .shapes {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 1ch;
+	gap: 8px;
 }
 
 .shape, .demo-toggle {
 	font: inherit;
-	padding: 0.1rem 1ch;
+	padding: 0 8px;
 	background: transparent;
 	color: var(--fg);
 	border: 1px solid var(--rule);
@@ -128,15 +148,15 @@ h2 {
 }
 
 .demo-caption, .demo-error {
-	margin: 0.75rem 0 0;
+	margin: 16px 0 0;
 	color: var(--dim);
 }
 
 pre {
 	margin: 0;
-	padding: 0.5rem 1ch;
+	font: inherit;
+	padding: 8px;
 	overflow-x: auto;
-	background: var(--inset);
 	border: 1px solid var(--rule);
 }
 
@@ -152,23 +172,31 @@ code {
 
 .links {
 	display: flex;
-	gap: 2ch;
+	gap: 16px;
 }
 
 .project + .project {
-	margin-top: 2rem;
+	margin-top: 32px;
+}
+
+/* inline-block so ninit's line-through does not reach the separator */
+.project-link + .project-link::before {
+	content: "|";
+	display: inline-block;
+	margin-right: 8px;
+	color: var(--dim);
 }
 
 .project-name {
-	color: var(--accent);
+	color: var(--bright);
 }
 
 .project-desc {
-	margin: 0.25rem 0;
+	margin: 0;
 }
 
 .want {
-	padding: 0 1ch;
+	padding: 0 8px;
 	border: 1px solid var(--rule);
 }
 
@@ -177,38 +205,21 @@ code {
 	text-decoration: none;
 }
 
-.install {
-	margin-top: 1.25rem;
-	scroll-margin-top: var(--gutter);
-}
-
-.install-title {
-	color: var(--dim);
-}
-
-.install-list {
-	margin: 0.5rem 0 0;
-}
-
-.install-list dt {
-	margin-top: 0.75rem;
-	color: var(--dim);
-}
-
-.install-list dd {
-	margin: 0.25rem 0 0;
+.wip {
+	color: var(--wip);
+	text-decoration: line-through;
+	cursor: default;
 }
 
 .site-footer {
-	margin-top: 3rem;
+	margin-top: 32px;
+	padding-top: 16px;
+	border-top: 1px solid var(--rule);
 }
 
 .site-footer .status {
 	margin: 0;
-	padding: 0.1rem 1ch;
-	background: var(--inset);
-	border: 1px solid var(--rule);
-	color: #fff;
+	color: var(--bright);
 }
 
 /*
@@ -248,3 +259,73 @@ code {
 	.logo { display: none; }
 }
 */
+
+.drop > summary {
+	color: var(--dim);
+	list-style: none;
+	cursor: pointer;
+}
+
+.drop > summary::-webkit-details-marker { display: none; }
+
+.drop > summary::before {
+	content: "+ ";
+	color: var(--accent);
+}
+
+.drop[open] > summary::before {
+	content: "- ";
+}
+
+.drop > summary:hover, .drop > summary:focus-visible {
+	color: var(--accent);
+}
+
+.drop > *:not(summary) {
+	margin: 16px 0 0;
+}
+
+.doc > section {
+	margin-top: 16px;
+}
+
+.doc h3 {
+	color: var(--dim);
+}
+
+.drop .drop {
+	padding-left: 16px;
+	border-left: 1px solid var(--rule);
+}
+
+@media (min-width: 62rem) {
+	.home .site-header, .home .main, .home .site-footer {
+		max-width: none;
+		margin-inline: 0;
+	}
+
+	.home .main {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: auto 1fr;
+		grid-template-areas: var(--layout);
+		align-items: start;
+		gap: 0 32px;
+	}
+
+	.home .intro {
+		grid-area: intro;
+	}
+
+	.home .col-docs {
+		grid-area: docs;
+		min-width: 0;
+	}
+
+	.home .col-demo {
+		grid-area: demo;
+		min-width: 0;
+		position: sticky;
+		top: var(--gutter);
+	}
+}

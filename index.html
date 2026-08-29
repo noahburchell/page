@@ -5,20 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>noah burchell</title>
 <meta name="description" content="">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="home">
 
 <header class="site-header">
 	<a class="brand" href="/">nburch.org</a>
-	<nav class="nav">
-		<a href="#projects">projects</a>
-		<a href="#about">about</a>
-		<a href="#contact">contact</a>
-	</nav>
 </header>
 
 <main class="main">
@@ -28,91 +20,81 @@
 		<p class="tagline"></p>
 	</section>
 
-	<section class="demo">
-		<div class="demo-stage">
-			<pre id="cube" role="img" aria-label="a spinning platonic solid drawn in ascii"></pre>
-		</div>
+	<div class="col col-demo">
 
-		<div class="demo-controls">
-			<div class="shapes" id="shapes"></div>
-			<button class="demo-toggle" id="toggle" type="button">pause</button>
-		</div>
+		<section class="demo">
+			<div class="demo-stage">
+				<pre id="cube" role="img" aria-label="a spinning platonic solid drawn in ascii"></pre>
+			</div>
 
-		<p class="demo-caption">
-			<a href="https://github.com/noahburchell/cube">cube</a> compiled to wasm.
-			<a class="want" href="#cube-install">want it?</a>
-		</p>
-		<p class="demo-error" id="demo-error" hidden></p>
-	</section>
+			<div class="demo-controls">
+				<div class="shapes" id="shapes"></div>
+				<button class="demo-toggle" id="toggle" type="button">pause</button>
+			</div>
 
-	<section class="projects" id="projects">
-		<h2>projects:</h2><br/>
-		<ul class="project-list">
-			<li class="project">
-				<h3 class="project-name">nhttp</h3>
-				<p class="project-desc">minimal http server</p>
-				<a class="project-link" href="https://github.com/noahburchell/nhttp">source</a>
-			</li>
+			<p class="demo-caption">
+				<a href="https://github.com/noahburchell/cube">cube</a> compiled to wasm.
+				<a class="want" href="get-cube.html">want it?</a>
+			</p>
+			<p class="demo-error" id="demo-error" hidden></p>
+		</section>
 
-			<li class="project">
-				<h3 class="project-name">ninit</h3>
-				<p class="project-desc">personal init project (wip)</p>
-				<a class="project-link" href="https://github.com/noahburchell/ninit">source</a>
-			</li>
+	</div>
 
-			<li class="project">
-				<h3 class="project-name">portage overlay</h3>
-				<p class="project-desc">overlay for my shit</p>
-				<a class="project-link" href="https://github.com/noahburchell/noahburchell-overlay">source</a>
-			</li>
+	<div class="col col-docs">
 
-			<li class="project">
-				<h3 class="project-name">cube</h3>
-				<p class="project-desc">spinning cube for your terminal, and the other platonic solids</p>
-				<a class="project-link" href="https://github.com/noahburchell/cube">source</a>
+		<section class="projects" id="projects">
+			<h2>projects:</h2><br/>
+			<ul class="project-list">
+				<li class="project">
+					<h3 class="project-name">nhttp</h3>
+					<p class="project-desc">minimal http server</p>
+					<a class="project-link" href="https://github.com/noahburchell/nhttp">source</a>
+					<a class="project-link" href="get-nhttp.html">get it</a>
+				</li>
 
-				<div class="install" id="cube-install">
-					<h4 class="install-title">get cube</h4>
-					<dl class="install-list">
-						<dt>nix</dt>
-						<dd><pre><code>nix run github:noahburchell/cube # or:<br/>nix profile install github:noahburchell/cube</code></pre></dd>
+				<li class="project">
+					<h3 class="project-name">ninit</h3>
+					<p class="project-desc">personal init project (wip)</p>
+					<a class="project-link" href="https://github.com/noahburchell/ninit">source</a>
+					<span class="project-link wip">get it</span>
+				</li>
 
-						<dt>brew</dt>
-						<dd><pre><code>brew install noahburchell/cube/cube</code></pre></dd>
+				<li class="project">
+					<h3 class="project-name">portage overlay</h3>
+					<p class="project-desc">overlay for my shit</p>
+					<a class="project-link" href="https://github.com/noahburchell/noahburchell-overlay">source</a>
+					<a class="project-link" href="sync-overlay.html">sync it</a>
+				</li>
 
-						<dt>gentoo</dt>
-						<dd><pre><code>eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
-emaint sync --repo noahburchell
-emerge --ask app-misc/cube</code></pre></dd>
+				<li class="project">
+					<h3 class="project-name">cube</h3>
+					<p class="project-desc">spinning cube for your terminal, and the other platonic solids</p>
+					<a class="project-link" href="https://github.com/noahburchell/cube">source</a>
+					<a class="project-link" href="get-cube.html">get it</a>
+				</li>
+			</ul>
+		</section>
 
-						<dt>source</dt>
-						<dd><pre><code>git clone --depth 1 https://github.com/noahburchell/cube.git
-cd cube
-make -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
-sudo make install</code></pre></dd>
-					</dl>
-				</div>
-			</li>
-		</ul>
-	</section>
+		<section class="about" id="about">
+			<h2>about:</h2>
+			<p>nothing notable to write here</p>
+		</section>
 
-	<section class="about" id="about">
-		<h2>about</h2>
-		<p>nothing notable to write here</p>
-	</section>
+		<section class="contact" id="contact">
+			<h2>contact:</h2>
+			<ul class="links">
+				<li><a href="https://github.com/noahburchell">github</a></li>
+				<li><a href="mailto:noah@nburch.org">email</a></li>
+			</ul>
+		</section>
 
-	<section class="contact" id="contact">
-		<h2>contact</h2>
-		<ul class="links">
-			<li><a href="https://github.com/noahburchell">github</a></li>
-			<li><a href="mailto:noah@nburch.org">email</a></li>
-		</ul>
-	</section>
+	</div>
 
 </main>
 
 <footer class="site-footer">
-	<p class="status">&copy; 2026 noah burchell</p>
+	<p class="status">(c) 2026 noah burchell</p>
 	<!-- <p class="credit">gentoo logo by lennart andre rolland, <a href="https://creativecommons.org/licenses/by-sa/2.5/">cc by-sa 2.5</a></p> -->
 </footer>
 
