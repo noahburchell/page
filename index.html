@@ -15,7 +15,7 @@
 <header class="site-header">
 	<a class="brand" href="/">nburch.org</a>
 	<nav class="nav">
-		<a href="#work">work</a>
+		<a href="#projects">projects</a>
 		<a href="#about">about</a>
 		<a href="#contact">contact</a>
 	</nav>
@@ -39,20 +39,39 @@
 		</div>
 
 		<p class="demo-caption">
-			<a href="https://github.com/noahburchell/cube">cube</a> compiled to wasm
+			<a href="https://github.com/noahburchell/cube">cube</a> compiled to wasm.
+			<a class="want" href="#cube-install">want it?</a>
 		</p>
 		<p class="demo-error" id="demo-error" hidden></p>
 	</section>
 
-	<section class="work" id="work">
-		<h2>work</h2>
+	<section class="projects" id="projects">
+		<h2>projects:</h2><br/>
 		<ul class="project-list">
+			<li class="project">
+				<h3 class="project-name">nhttp</h3>
+				<p class="project-desc">minimal http server</p>
+				<a class="project-link" href="https://github.com/noahburchell/nhttp">source</a>
+			</li>
+
+			<li class="project">
+				<h3 class="project-name">ninit</h3>
+				<p class="project-desc">personal init project (WIP)</p>
+				<a class="project-link" href="https://github.com/noahburchell/ninit">source</a>
+			</li>
+
+			<li class="project">
+				<h3 class="project-name">portage overlay</h3>
+				<p class="project-desc">overlay for my shit</p>
+				<a class="project-link" href="https://github.com/noahburchell/noahburchell-overlay">source</a>
+			</li>
+
 			<li class="project">
 				<h3 class="project-name">cube</h3>
 				<p class="project-desc">spinning cube for your terminal, and the other platonic solids</p>
 				<a class="project-link" href="https://github.com/noahburchell/cube">source</a>
 
-				<div class="install">
+				<div class="install" id="cube-install">
 					<h4 class="install-title">install</h4>
 					<dl class="install-list">
 						<dt>nix</dt>
@@ -79,7 +98,7 @@ sudo make install</code></pre></dd>
 
 	<section class="about" id="about">
 		<h2>about</h2>
-		<p></p>
+		<p>nothing notable to write here</p>
 	</section>
 
 	<section class="contact" id="contact">

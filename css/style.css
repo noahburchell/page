@@ -164,6 +164,10 @@ code {
 	gap: 2ch;
 }
 
+.project + .project {
+	margin-top: 2rem;
+}
+
 .project-name {
 	color: var(--accent);
 }
@@ -172,8 +176,19 @@ code {
 	margin: 0.25rem 0;
 }
 
+.want {
+	padding: 0 1ch;
+	border: 1px solid var(--rule);
+}
+
+.want:hover, .want:focus-visible {
+	border-color: var(--accent);
+	text-decoration: none;
+}
+
 .install {
 	margin-top: 1.25rem;
+	scroll-margin-top: var(--gutter);
 }
 
 .install-title {
