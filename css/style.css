@@ -13,7 +13,6 @@
 	--rule: #555555;
 	--wip: #ff5555;
 	--gutter: 32px;
-	--measure: 80ch;
 
 	/* swap the wide layout: name the demo first in both rows to flip sides */
 	--layout: "intro demo" "docs demo";
@@ -44,8 +43,6 @@ body {
 
 .site-header, .main, .site-footer {
 	width: 100%;
-	max-width: var(--measure);
-	margin-inline: auto;
 }
 
 ::selection {
@@ -173,18 +170,34 @@ code {
 .links {
 	display: flex;
 	gap: 16px;
+	margin-top: 16px;
 }
 
 .project + .project {
 	margin-top: 32px;
 }
 
-/* inline-block so ninit's line-through does not reach the separator */
+/* inline-block so ninit's line-through does not reach the punctuation */
+.project-desc + .project-link::before,
+.project-link + .project-link::before,
+.project-link:last-child::after {
+	display: inline-block;
+	color: var(--dim);
+}
+
+.project-desc + .project-link::before {
+	content: "(";
+	margin-right: 8px;
+}
+
 .project-link + .project-link::before {
 	content: "|";
-	display: inline-block;
 	margin-right: 8px;
-	color: var(--dim);
+}
+
+.project-link:last-child::after {
+	content: ")";
+	margin-left: 8px;
 }
 
 .project-name {
@@ -192,7 +205,7 @@ code {
 }
 
 .project-desc {
-	margin: 0;
+	margin: 16px 0 0;
 }
 
 .want {
@@ -299,14 +312,11 @@ code {
 }
 
 @media (min-width: 62rem) {
-	.home .site-header, .home .main, .home .site-footer {
-		max-width: none;
-		margin-inline: 0;
-	}
-
 	.home .main {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+		/* whole cells, so the right column starts on a device pixel */
+		grid-template-columns: repeat(2, round(down, calc((100% - 32px) / 2), 8px));
 		grid-template-rows: auto 1fr;
 		grid-template-areas: var(--layout);
 		align-items: start;
