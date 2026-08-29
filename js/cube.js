@@ -1,11 +1,3 @@
-// drives wasm/cube.wasm: cube's own C renderer, rasterising a character grid
-// that we drop straight into <pre id="cube"> as text.
-//
-// no colour, no opacity, no per-glyph anything: the shading is the characters
-// themselves, exactly as the terminal draws it. style #cube however you like,
-// but it has to stay monospace with a line-height of twice the character
-// width, because cube bakes that 2:1 cell aspect into its projection.
-
 (function () {
 	'use strict';
 
@@ -14,12 +6,12 @@
 	if (!el)
 		return;
 
-	var SPIN_PERIOD = 40 * Math.PI; // matches cube's own wrap point
+	var SPIN_PERIOD = 40 * Math.PI;
 	var CELL_ASPECT = 2;
-	var STILL_T = 3.4;              // three faces visible: where we open, and hold when motion is reduced
+	var STILL_T = 3.4;
 
 	var wasm = null;
-	var cells = null;               // Uint8Array view of the wasm grid
+	var cells = null;
 	var maxW = 0, maxH = 0;
 	var cols = 0, rows = 0;
 	var shape = 0;
@@ -37,8 +29,6 @@
 		el.hidden = true;
 	}
 
-	// measure a real character cell through the layout engine, so this tracks
-	// whatever font the css actually resolved to
 	function cell() {
 		var probe = document.createElement('span');
 
@@ -105,7 +95,6 @@
 
 		if (want && !running) {
 			running = true;
-			// keep the phase we stopped at instead of jumping back
 			t0 = performance.now() - tFrozen * 1000;
 			raf = requestAnimationFrame(frame);
 		} else if (!want && running) {
@@ -193,7 +182,6 @@
 		if (reduced.addEventListener)
 			reduced.addEventListener('change', sync);
 
-		// the cell size changes once a webfont lands
 		if (document.fonts && document.fonts.ready)
 			document.fonts.ready.then(relayout);
 	}
@@ -206,7 +194,6 @@
 				.then(function (b) { return WebAssembly.instantiate(b, {}); });
 		};
 
-		// instantiateStreaming needs application/wasm; fall back if the host lies
 		return WebAssembly.instantiateStreaming
 			? WebAssembly.instantiateStreaming(fetch(url), {}).catch(buffered)
 			: buffered();

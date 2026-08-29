@@ -1,18 +1,12 @@
-/* dark, monospace, laid out like a page of `less` output.
-
-   #cube must stay monospace, and its line-height must stay twice the
-   character width: cube's projection has that 2:1 cell aspect baked in,
-   so anything else distorts the shape. 2ch is exactly that. */
-
 :root {
 	--bg: #0f0f0f;
 	--fg: #c9c9c9;
 	--dim: #6f6f6f;
-	--accent: #659ad2;	/* the blue out of the C logo */
+	--accent: #659ad2;
 	--rule: #262626;
 	--inset: #161616;
 	--gutter: 30pt;
-	--measure: 80ch;	/* an 80-column terminal */
+	--measure: 80ch;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -85,8 +79,6 @@ h2 {
 	color: var(--accent);
 }
 
-/* the render is a character grid, so ligatures would collapse cells and
-   break the 1:1 mapping the wasm renderer assumes */
 #cube {
 	margin: 0;
 	height: 60vh;
@@ -208,7 +200,6 @@ code {
 	margin: 0.25rem 0 0;
 }
 
-/* less keeps its status line in inverse video at the foot of the screen */
 .site-footer {
 	margin-top: 3rem;
 }

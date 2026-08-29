@@ -1,5 +1,4 @@
 #!/bin/sh
-# builds cube's renderer to a freestanding wasm32 module. no emscripten needed.
 set -e
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
