@@ -1,18 +1,19 @@
-/* the only rules here are the ones the cube demo needs in order to have a box
-   to draw into. everything else is yours. */
+/* the only rules here are the ones the cube demo needs to work.
+   everything else is yours.
+
+   #cube must stay monospace, and its line-height must stay twice the
+   character width: cube's projection has that 2:1 cell aspect baked in,
+   so anything else distorts the shape. 2ch is exactly that. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 [hidden] { display: none; }
 
-.demo-stage {
-	width: 100%;
+#cube {
+	margin: 0;
 	height: 60vh;
 	max-height: 30rem;
-}
-
-#cube {
-	display: block;
-	width: 100%;
-	height: 100%;
+	overflow: hidden;
+	font-family: monospace;
+	line-height: 2ch;
 }

@@ -29,13 +29,14 @@ CUBE_SRC=/path/to/cube/src wasm/build.sh
 
 Needs clang 19+ (C23 `constexpr`, wasm32 target).
 
-The canvas takes its colour and font from CSS, so it follows whatever you style:
+The grid goes into `<pre id="cube">` as plain text — the shading is the
+characters themselves, same as the terminal. Style it however, but it has to
+stay monospace with a line-height of twice the character width, because cube
+bakes that 2:1 cell aspect into its projection:
 
 ```css
-#cube { color: #eee; font-family: ui-monospace, monospace; }
+#cube { font-family: monospace; line-height: 2ch; }
 ```
-
-Shading is an alpha ramp over that one colour, so it reads on any background.
 
 ## locally
 

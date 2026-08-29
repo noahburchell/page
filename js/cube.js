@@ -1,33 +1,28 @@
-// drives wasm/cube.wasm: cube's own C renderer, rasterising an ASCII grid we
-// paint onto a canvas one run of equal characters at a time.
+// drives wasm/cube.wasm: cube's own C renderer, rasterising a character grid
+// that we drop straight into <pre id="cube"> as text.
 //
-// it takes its colour and font from whatever you style the canvas with:
-//   #cube { color: ...; font-family: ...; }
-// shading comes from the alpha ramp below, so it reads on any background.
+// no colour, no opacity, no per-glyph anything: the shading is the characters
+// themselves, exactly as the terminal draws it. style #cube however you like,
+// but it has to stay monospace with a line-height of twice the character
+// width, because cube bakes that 2:1 cell aspect into its projection.
 
 (function () {
 	'use strict';
 
-	var canvas = document.getElementById('cube');
-	var stage  = canvas && canvas.parentElement;
-	var errEl  = document.getElementById('demo-error');
-	if (!canvas)
+	var el = document.getElementById('cube');
+	var errEl = document.getElementById('demo-error');
+	if (!el)
 		return;
 
 	var SPIN_PERIOD = 40 * Math.PI; // matches cube's own wrap point
-	var CELL_ASPECT = 2;            // cube assumes cells are 2x taller than wide
-	var STILL_T     = 3.4;          // three faces visible: where we open, and hold when motion is reduced
+	var CELL_ASPECT = 2;
+	var STILL_T = 3.4;              // three faces visible: where we open, and hold when motion is reduced
 
-	var RAMP  = '.:-+*#';                             // cube's ramp, dimmest first
-	var ALPHA = [0.22, 0.36, 0.50, 0.66, 0.82, 1.00];
-
-	var ctx = canvas.getContext('2d');
 	var wasm = null;
-	var cells = null;   // Uint8Array view of the wasm grid
+	var cells = null;               // Uint8Array view of the wasm grid
 	var maxW = 0, maxH = 0;
-
-	var cols = 0, rows = 0, charW = 0, lineH = 0, height = 0;
-	var shape = 0, ink = '#000';
+	var cols = 0, rows = 0;
+	var shape = 0;
 
 	var running = false, visible = true, onscreen = true, paused = false;
 	var raf = 0, t0 = 0, tFrozen = STILL_T;
@@ -39,40 +34,42 @@
 			errEl.textContent = msg;
 			errEl.hidden = false;
 		}
-		canvas.hidden = true;
+		el.hidden = true;
+	}
+
+	// measure a real character cell through the layout engine, so this tracks
+	// whatever font the css actually resolved to
+	function cell() {
+		var probe = document.createElement('span');
+
+		probe.textContent = new Array(201).join('#');
+		probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;display:inline-block';
+		el.appendChild(probe);
+
+		var w = probe.getBoundingClientRect().width / 200;
+		el.removeChild(probe);
+
+		var lh = parseFloat(getComputedStyle(el).lineHeight);
+		if (!(lh > 0))
+			lh = w * CELL_ASPECT;
+
+		return { w: w, h: lh };
 	}
 
 	function layout() {
 		if (!wasm)
 			return false;
 
-		var css = getComputedStyle(canvas);
-		var w = stage.clientWidth || canvas.clientWidth;
-		if (!w)
+		var c = cell();
+		if (!(c.w > 0) || !(c.h > 0))
 			return false;
 
-		var h = stage.clientHeight || Math.round(w * 0.6);
-		var font = css.fontFamily || 'monospace';
-		ink = css.color || '#000';
+		var cs = getComputedStyle(el);
+		var w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		var h = el.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
 
-		// advance width of that font, per px of font-size
-		ctx.font = '100px ' + font;
-		var ratio = ctx.measureText('##########').width / 1000 || 0.6;
-
-		cols = Math.max(44, Math.min(maxW, Math.round(w / 8.5)));
-		charW = w / cols;
-		lineH = charW * CELL_ASPECT;
-		rows = Math.max(12, Math.min(maxH, Math.floor(h / lineH)));
-		height = h;
-
-		var dpr = Math.min(window.devicePixelRatio || 1, 2);
-		canvas.width  = Math.round(w * dpr);
-		canvas.height = Math.round(h * dpr);
-
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		ctx.font = (charW / ratio) + 'px ' + font;
-		ctx.textBaseline = 'middle';
-		ctx.textAlign = 'left';
+		cols = Math.max(20, Math.min(maxW, Math.floor(w / c.w)));
+		rows = Math.max(8, Math.min(maxH, Math.floor(h / c.h)));
 
 		return true;
 	}
@@ -86,32 +83,15 @@
 		if (!cells || cells.buffer !== buf)
 			cells = new Uint8Array(buf);
 
-		var yoff = (height - rows * lineH) / 2;
-
-		ctx.clearRect(0, 0, cols * charW, height);
-		ctx.fillStyle = ink;
-
+		var out = '';
 		for (var y = 0; y < rows; y++) {
 			var row = base + y * cols;
-			var cy = yoff + y * lineH + lineH / 2;
-			var x = 0;
-
-			while (x < cols) {
-				var ch = cells[row + x];
-				if (ch === 32) { x++; continue; }
-
-				var start = x;
-				do { x++; } while (x < cols && cells[row + x] === ch);
-
-				var glyph = String.fromCharCode(ch);
-				var shade = RAMP.indexOf(glyph);
-
-				ctx.globalAlpha = shade < 0 ? 1 : ALPHA[shade];
-				ctx.fillText(glyph.repeat(x - start), start * charW, cy);
-			}
+			out += String.fromCharCode.apply(null, cells.subarray(row, row + cols));
+			if (y < rows - 1)
+				out += '\n';
 		}
 
-		ctx.globalAlpha = 1;
+		el.textContent = out;
 	}
 
 	function frame(now) {
@@ -200,20 +180,21 @@
 			new IntersectionObserver(function (e) {
 				onscreen = e[0].isIntersecting;
 				sync();
-			}, { threshold: 0 }).observe(canvas);
+			}, { threshold: 0 }).observe(el);
 		}
 
 		var relayout = function () { if (layout()) paint(tFrozen); };
 
 		if ('ResizeObserver' in window)
-			new ResizeObserver(relayout).observe(stage);
+			new ResizeObserver(relayout).observe(el);
 		else
 			addEventListener('resize', relayout);
 
 		if (reduced.addEventListener)
 			reduced.addEventListener('change', sync);
 
-		if (document.fonts)
+		// the cell size changes once a webfont lands
+		if (document.fonts && document.fonts.ready)
 			document.fonts.ready.then(relayout);
 	}
 
@@ -231,7 +212,7 @@
 			: buffered();
 	}
 
-	if (!window.WebAssembly || !canvas.getContext) {
+	if (!window.WebAssembly) {
 		fail('this browser has no WebAssembly.');
 		return;
 	}
@@ -245,7 +226,7 @@
 		wire();
 
 		if (!layout()) {
-			fail('could not size the canvas.');
+			fail('could not measure the character cell.');
 			return;
 		}
 

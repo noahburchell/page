@@ -27,7 +27,7 @@
 
 	<section class="demo">
 		<div class="demo-stage">
-			<canvas id="cube" role="img" aria-label="A spinning platonic solid drawn in ASCII"></canvas>
+			<pre id="cube" role="img" aria-label="A spinning platonic solid drawn in ASCII"></pre>
 		</div>
 
 		<div class="demo-controls">
@@ -48,6 +48,28 @@
 				<h3 class="project-name">cube</h3>
 				<p class="project-desc">spinning cube for your terminal, and the other platonic solids</p>
 				<a class="project-link" href="https://github.com/noahburchell/cube">source</a>
+
+				<div class="install">
+					<h4 class="install-title">install</h4>
+					<dl class="install-list">
+						<dt>nix</dt>
+						<dd><pre><code>nix run github:noahburchell/cube</code></pre></dd>
+
+						<dt>brew</dt>
+						<dd><pre><code>brew install noahburchell/cube/cube</code></pre></dd>
+
+						<dt>gentoo</dt>
+						<dd><pre><code>eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
+emaint sync --repo noahburchell
+emerge --ask app-misc/cube</code></pre></dd>
+
+						<dt>source</dt>
+						<dd><pre><code>git clone --depth 1 https://github.com/noahburchell/cube.git
+cd cube
+make -j"$(nproc)"
+sudo make install</code></pre></dd>
+					</dl>
+				</div>
 			</li>
 		</ul>
 	</section>
