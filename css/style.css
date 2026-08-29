@@ -1,19 +1,225 @@
-/* the only rules here are the ones the cube demo needs to work.
-   everything else is yours.
+/* dark, monospace, laid out like a page of `less` output.
 
    #cube must stay monospace, and its line-height must stay twice the
    character width: cube's projection has that 2:1 cell aspect baked in,
    so anything else distorts the shape. 2ch is exactly that. */
 
+:root {
+	--bg: #0f0f0f;
+	--fg: #c9c9c9;
+	--dim: #6f6f6f;
+	--accent: #659ad2;	/* the blue out of the C logo */
+	--rule: #262626;
+	--inset: #161616;
+	--gutter: 30pt;
+	--measure: 80ch;	/* an 80-column terminal */
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 [hidden] { display: none; }
 
+html {
+	color-scheme: dark;
+}
+
+body {
+	margin: 0;
+	padding: var(--gutter);
+	background: var(--bg);
+	color: var(--fg);
+	font-family: 'Fira Code', ui-monospace, monospace;
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.site-header, .main, .site-footer {
+	max-width: var(--measure);
+	margin-inline: auto;
+}
+
+a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
+a:hover, a:focus-visible {
+	text-decoration: underline;
+}
+
+.site-header {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 2ch;
+	justify-content: space-between;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+	color: var(--fg);
+}
+
+.nav {
+	display: flex;
+	gap: 2ch;
+}
+
+h1, h2, h3, h4 {
+	font-size: inherit;
+	font-weight: 700;
+	margin: 0;
+}
+
+h2 {
+	color: var(--dim);
+	text-transform: uppercase;
+	letter-spacing: 0.1ch;
+}
+
+.main > section {
+	margin-top: 2.5rem;
+}
+
+.intro h1 {
+	color: var(--accent);
+}
+
+/* the render is a character grid, so ligatures would collapse cells and
+   break the 1:1 mapping the wasm renderer assumes */
 #cube {
 	margin: 0;
 	height: 60vh;
 	max-height: 30rem;
 	overflow: hidden;
-	font-family: monospace;
+	font-family: inherit;
+	font-variant-ligatures: none;
 	line-height: 2ch;
+	color: var(--fg);
+}
+
+.demo-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1ch;
+	margin-top: 1rem;
+}
+
+.shapes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1ch;
+}
+
+.shape, .demo-toggle {
+	font: inherit;
+	padding: 0.1rem 1ch;
+	background: transparent;
+	color: var(--fg);
+	border: 1px solid var(--rule);
+	cursor: pointer;
+}
+
+.shape:hover, .demo-toggle:hover {
+	border-color: var(--accent);
+	color: var(--accent);
+}
+
+.shape[aria-pressed="true"] {
+	background: var(--fg);
+	color: var(--bg);
+	border-color: var(--fg);
+}
+
+.demo-toggle:disabled {
+	color: var(--dim);
+	cursor: default;
+}
+
+.demo-caption, .demo-error {
+	margin: 0.75rem 0 0;
+	color: var(--dim);
+}
+
+pre {
+	margin: 0;
+	padding: 0.5rem 1ch;
+	overflow-x: auto;
+	background: var(--inset);
+	border: 1px solid var(--rule);
+}
+
+code {
+	font: inherit;
+}
+
+.project-list, .links {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.links {
+	display: flex;
+	gap: 2ch;
+}
+
+.project-name {
+	color: var(--accent);
+}
+
+.project-desc {
+	margin: 0.25rem 0;
+}
+
+.install {
+	margin-top: 1.25rem;
+}
+
+.install-title {
+	color: var(--dim);
+}
+
+.install-list {
+	margin: 0.5rem 0 0;
+}
+
+.install-list dt {
+	margin-top: 0.75rem;
+	color: var(--dim);
+}
+
+.install-list dd {
+	margin: 0.25rem 0 0;
+}
+
+/* less keeps its status line in inverse video at the foot of the screen */
+.site-footer {
+	margin-top: 3rem;
+}
+
+.site-footer p {
+	margin: 0;
+	padding: 0 1ch;
+	background: var(--fg);
+	color: var(--bg);
+}
+
+.c-logo {
+	position: fixed;
+	right: var(--gutter);
+	bottom: var(--gutter);
+	width: 4rem;
+	height: auto;
+	opacity: 0.85;
+	pointer-events: none;
+	animation: c-logo-spin 8s linear infinite;
+}
+
+@keyframes c-logo-spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.c-logo { animation: none; }
 }
