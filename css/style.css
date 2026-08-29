@@ -211,6 +211,7 @@ code {
 	color: #fff;
 }
 
+/*
 .credit {
 	margin: 0.75rem 0 0;
 	color: var(--dim);
@@ -246,3 +247,4 @@ code {
 @media (max-width: 1000px) {
 	.logo { display: none; }
 }
+*/
