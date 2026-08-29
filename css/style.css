@@ -67,7 +67,6 @@ h1, h2, h3, h4 {
 
 h2 {
 	color: var(--dim);
-	text-transform: uppercase;
 	letter-spacing: 0.1ch;
 }
 
@@ -204,28 +203,46 @@ code {
 	margin-top: 3rem;
 }
 
-.site-footer p {
+.site-footer .status {
 	margin: 0;
-	padding: 0 1ch;
-	background: var(--fg);
-	color: var(--bg);
+	padding: 0.1rem 1ch;
+	background: var(--inset);
+	border: 1px solid var(--rule);
+	color: #fff;
 }
 
-.c-logo {
+.credit {
+	margin: 0.75rem 0 0;
+	color: var(--dim);
+}
+
+.logo {
 	position: fixed;
-	right: var(--gutter);
-	bottom: var(--gutter);
 	width: 4rem;
 	height: auto;
 	opacity: 0.85;
 	pointer-events: none;
-	animation: c-logo-spin 8s linear infinite;
+	animation: logo-spin 8s linear infinite;
 }
 
-@keyframes c-logo-spin {
+.c-logo {
+	right: var(--gutter);
+	bottom: var(--gutter);
+}
+
+.gentoo-logo {
+	left: var(--gutter);
+	top: var(--gutter);
+}
+
+@keyframes logo-spin {
 	to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.c-logo { animation: none; }
+	.logo { animation: none; }
+}
+
+@media (max-width: 1000px) {
+	.logo { display: none; }
 }
