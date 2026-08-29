@@ -1,161 +1,76 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>noah burchell</title>
-<meta name="description" content="Noah Burchell">
-<meta name="color-scheme" content="dark light">
-<meta property="og:title" content="Noah Burchell">
-<meta property="og:description" content="bullshit c programs">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://nburch.org/">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' x='4' font-size='24' font-family='monospace'>%23</text></svg>">
+<title>Noah Burchell</title>
+<meta name="description" content="">
 <link rel="stylesheet" href="css/style.css">
-<script>
-// set the theme before first paint so there is no flash
-(function () {
-	try {
-		var saved = localStorage.getItem('theme');
-		document.documentElement.dataset.theme = saved
-			|| (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-	} catch (e) { /* private mode: stay dark */ }
-})();
-</script>
 </head>
 <body>
 
-<a class="skip" href="#main">skip to content</a>
-
-<header class="topbar">
-	<a class="brand" href="/">
-		<span class="brand-mark" aria-hidden="true">#</span>
-		<span class="brand-name">nburch<span class="dim">.org</span></span>
-	</a>
-	<nav>
+<header class="site-header">
+	<a class="brand" href="/">nburch.org</a>
+	<nav class="nav">
 		<a href="#work">work</a>
 		<a href="#about">about</a>
 		<a href="#contact">contact</a>
-		<button id="theme" class="icon-btn" type="button" aria-label="Toggle colour scheme" title="Toggle colour scheme">
-			<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path class="sun" d="M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M18.4 5.6l1.4-1.4M4.2 19.8l1.4-1.4"/><circle class="sun" cx="12" cy="12" r="4"/><path class="moon" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
-		</button>
 	</nav>
 </header>
 
-<main id="main">
+<main class="main">
 
-<section class="hero">
-	<div class="hero-copy">
-		<p class="eyebrow">noah burchell</p>
-		<h1>i make bullshit in&nbsp;C.</h1>
-		<p class="lede">
-			yep
-		</p>
-		<div class="hero-actions">
-			<a class="btn btn-primary" href="#work">See the work</a>
-			<a class="btn" href="https://github.com/noahburchell">GitHub&nbsp;<span aria-hidden="true">&rarr;</span></a>
+	<section class="intro">
+		<h1>Noah Burchell</h1>
+		<p class="tagline"></p>
+	</section>
+
+	<section class="demo">
+		<div class="demo-stage">
+			<canvas id="cube" role="img" aria-label="A spinning platonic solid drawn in ASCII"></canvas>
 		</div>
-	</div>
 
-	<figure class="demo" id="demo">
-		<div class="demo-frame">
-			<div class="demo-bar">
-				<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
-				<span class="demo-title" id="demo-title">cube --cube</span>
-				<span class="demo-badge" id="demo-badge">wasm</span>
-			</div>
-			<div class="demo-stage">
-				<canvas id="cube" role="img" aria-label="An ASCII-shaded platonic solid spinning in the browser"></canvas>
-				<noscript><p class="demo-fallback">The cube demo needs JavaScript.</p></noscript>
-				<p class="demo-fallback" id="demo-error" hidden></p>
-			</div>
-			<div class="demo-controls" role="group" aria-label="Choose a shape">
-				<div class="shapes" id="shapes"></div>
-				<button class="icon-btn" id="toggle" type="button" aria-label="Pause animation" title="Pause">
-					<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path class="pause" d="M9 5v14M15 5v14"/><path class="play" d="M8 5l11 7-11 7z"/></svg>
-				</button>
-			</div>
+		<div class="demo-controls">
+			<div class="shapes" id="shapes"></div>
+			<button class="demo-toggle" id="toggle" type="button">pause</button>
 		</div>
-		<figcaption>
-			compiled to wasm <a href="https://github.com/noahburchell/cube">cube</a>
-		</figcaption>
-	</figure>
-</section>
 
-<section id="work" class="section">
-	<h2 class="section-title"><span class="hash" aria-hidden="true">#</span> work</h2>
-
-	<article class="project">
-		<div class="project-head">
-			<h3>cube</h3>
-			<span class="tag">C23</span>
-			<span class="tag">GPL-3.0</span>
-			<a class="project-link" href="https://github.com/noahburchell/cube">source <span aria-hidden="true">&rarr;</span></a>
-		</div>
-		<p>
-			A spinning cube for your terminal (and the other four platonic solids)
+		<p class="demo-caption">
+			<a href="https://github.com/noahburchell/cube">cube</a> compiled to wasm
 		</p>
-		<p class="muted">
-			Linux, macOS and BSD; packaged for Gentoo, Homebrew and Nix.
-		</p>
+		<p class="demo-error" id="demo-error" hidden></p>
+	</section>
 
-		<div class="install">
-			<div class="tabs" role="tablist" aria-label="Install method">
-				<button role="tab" aria-selected="true"  aria-controls="p-nix"    id="t-nix"    data-tab="nix">nix</button>
-				<button role="tab" aria-selected="false" aria-controls="p-brew"   id="t-brew"   data-tab="brew">brew</button>
-				<button role="tab" aria-selected="false" aria-controls="p-gentoo" id="t-gentoo" data-tab="gentoo">gentoo</button>
-				<button role="tab" aria-selected="false" aria-controls="p-src"    id="t-src"    data-tab="src">source</button>
-			</div>
-			<div class="panels">
-				<pre role="tabpanel" id="p-nix"    aria-labelledby="t-nix"><code>nix run github:noahburchell/cube -- --icosahedron</code></pre>
-				<pre role="tabpanel" id="p-brew"   aria-labelledby="t-brew"   hidden><code>brew install noahburchell/cube/cube</code></pre>
-				<pre role="tabpanel" id="p-gentoo" aria-labelledby="t-gentoo" hidden><code>eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
-emaint sync --repo noahburchell
-emerge --ask app-misc/cube</code></pre>
-				<pre role="tabpanel" id="p-src"    aria-labelledby="t-src"    hidden><code>git clone --depth 1 https://github.com/noahburchell/cube.git
-cd cube &amp;&amp; make -j"$(nproc)"
-sudo make install</code></pre>
-				<button class="copy" id="copy" type="button">copy</button>
-			</div>
-		</div>
-	</article>
+	<section class="work" id="work">
+		<h2>work</h2>
+		<ul class="project-list">
+			<li class="project">
+				<h3 class="project-name">cube</h3>
+				<p class="project-desc">spinning cube for your terminal, and the other platonic solids</p>
+				<a class="project-link" href="https://github.com/noahburchell/cube">source</a>
+			</li>
+		</ul>
+	</section>
 
-	<article class="project">
-		<div class="project-head">
-			<h3>cube.wasm</h3>
-			<span class="tag">WebAssembly</span>
-			<a class="project-link" href="#demo">demo <span aria-hidden="true">&uarr;</span></a>
-		</div>
-		<p>
-			wasm
-		</p>
-	</article>
-</section>
+	<section class="about" id="about">
+		<h2>about</h2>
+		<p></p>
+	</section>
 
-<section id="about" class="section">
-	<h2 class="section-title"><span class="hash" aria-hidden="true">#</span> about</h2>
-	<div class="prose">
-		<p>
-			idk what to put here
-		</p>
-	</div>
-</section>
-
-<section id="contact" class="section">
-	<h2 class="section-title"><span class="hash" aria-hidden="true">#</span> contact</h2>
-	<ul class="links">
-		<li><span class="k">github</span><a href="https://github.com/noahburchell">github.com/noahburchell</a></li>
-		<li><span class="k">email</span><a href="mailto:cube@nburch.org">noah@nburch.org</a></li>
-	</ul>
-</section>
+	<section class="contact" id="contact">
+		<h2>contact</h2>
+		<ul class="links">
+			<li><a href="https://github.com/noahburchell">github</a></li>
+			<li><a href="mailto:cube@nburch.org">email</a></li>
+		</ul>
+	</section>
 
 </main>
 
-<footer>
-	<p>&copy; <span id="year">2026</span> Noah Burchell</p>
+<footer class="site-footer">
+	<p>&copy; 2026 Noah Burchell</p>
 </footer>
 
-<script src="js/main.js" defer></script>
 <script src="js/cube.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,9 @@
 // drives wasm/cube.wasm: cube's own C renderer, rasterising an ASCII grid we
 // paint onto a canvas one run of equal characters at a time.
+//
+// it takes its colour and font from whatever you style the canvas with:
+//   #cube { color: ...; font-family: ...; }
+// shading comes from the alpha ramp below, so it reads on any background.
 
 (function () {
 	'use strict';
@@ -12,24 +16,18 @@
 
 	var SPIN_PERIOD = 40 * Math.PI; // matches cube's own wrap point
 	var CELL_ASPECT = 2;            // cube assumes cells are 2x taller than wide
-	var STILL_T     = 3.4;          // three faces visible: the angle we open on, and hold when motion is reduced
+	var STILL_T     = 3.4;          // three faces visible: where we open, and hold when motion is reduced
 
-	// cube's shading ramp, dimmest first
-	var RAMP = '.:-+*#';
+	var RAMP  = '.:-+*#';                             // cube's ramp, dimmest first
+	var ALPHA = [0.22, 0.36, 0.50, 0.66, 0.82, 1.00];
 
-	var PALETTE = {
-		dark:  ['#33404f', '#42596a', '#4c7c74', '#57a68a', '#5fcda3', '#aef7da'],
-		light: ['#c4ccc7', '#9aa8a1', '#6f8a7e', '#477060', '#245740', '#0a3524']
-	};
-
-	var ctx = canvas.getContext('2d', { alpha: true });
+	var ctx = canvas.getContext('2d');
 	var wasm = null;
 	var cells = null;   // Uint8Array view of the wasm grid
 	var maxW = 0, maxH = 0;
 
-	var cols = 0, rows = 0, charW = 0, lineH = 0, fontPx = 0, dpr = 1;
-	var shape = 0;
-	var colors = PALETTE.dark;
+	var cols = 0, rows = 0, charW = 0, lineH = 0, height = 0;
+	var shape = 0, ink = '#000';
 
 	var running = false, visible = true, onscreen = true, paused = false;
 	var raf = 0, t0 = 0, tFrozen = STILL_T;
@@ -37,53 +35,42 @@
 	var reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
 	function fail(msg) {
-		if (!errEl)
-			return;
-		errEl.textContent = msg;
-		errEl.hidden = false;
+		if (errEl) {
+			errEl.textContent = msg;
+			errEl.hidden = false;
+		}
 		canvas.hidden = true;
 	}
 
-	function pickColors() {
-		var name = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
-		colors = PALETTE[name];
-	}
-
-	function fontStack() {
-		return getComputedStyle(document.documentElement)
-			.getPropertyValue('--mono').trim() || 'monospace';
-	}
-
-	// advance width of the mono font, per px of font-size
-	function advanceRatio(stack) {
-		ctx.font = '100px ' + stack;
-		return ctx.measureText('##########').width / 1000;
-	}
-
 	function layout() {
-		var w = stage.clientWidth, h = stage.clientHeight;
-		if (!w || !h || !wasm)
+		if (!wasm)
 			return false;
 
-		dpr = Math.min(window.devicePixelRatio || 1, 2);
+		var css = getComputedStyle(canvas);
+		var w = stage.clientWidth || canvas.clientWidth;
+		if (!w)
+			return false;
 
-		var stack = fontStack();
-		var ratio = advanceRatio(stack) || 0.6;
+		var h = stage.clientHeight || Math.round(w * 0.6);
+		var font = css.fontFamily || 'monospace';
+		ink = css.color || '#000';
 
-		var want = Math.round(w / 8.5);
-		cols = Math.max(44, Math.min(maxW, want));
+		// advance width of that font, per px of font-size
+		ctx.font = '100px ' + font;
+		var ratio = ctx.measureText('##########').width / 1000 || 0.6;
 
+		cols = Math.max(44, Math.min(maxW, Math.round(w / 8.5)));
 		charW = w / cols;
 		lineH = charW * CELL_ASPECT;
-		rows  = Math.max(12, Math.min(maxH, Math.floor(h / lineH)));
+		rows = Math.max(12, Math.min(maxH, Math.floor(h / lineH)));
+		height = h;
 
-		fontPx = charW / ratio;
-
+		var dpr = Math.min(window.devicePixelRatio || 1, 2);
 		canvas.width  = Math.round(w * dpr);
 		canvas.height = Math.round(h * dpr);
 
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-		ctx.font = fontPx + 'px ' + stack;
+		ctx.font = (charW / ratio) + 'px ' + font;
 		ctx.textBaseline = 'middle';
 		ctx.textAlign = 'left';
 
@@ -91,9 +78,7 @@
 	}
 
 	function paint(t) {
-		if (!cols || !rows)
-			return;
-		if (wasm.cube_render(shape, cols, rows, t))
+		if (!cols || !rows || wasm.cube_render(shape, cols, rows, t))
 			return;
 
 		var base = wasm.cube_grid();
@@ -101,10 +86,10 @@
 		if (!cells || cells.buffer !== buf)
 			cells = new Uint8Array(buf);
 
-		var w = cols * charW;
-		var yoff = (stage.clientHeight - rows * lineH) / 2;
+		var yoff = (height - rows * lineH) / 2;
 
-		ctx.clearRect(0, 0, w, stage.clientHeight);
+		ctx.clearRect(0, 0, cols * charW, height);
+		ctx.fillStyle = ink;
 
 		for (var y = 0; y < rows; y++) {
 			var row = base + y * cols;
@@ -121,46 +106,39 @@
 				var glyph = String.fromCharCode(ch);
 				var shade = RAMP.indexOf(glyph);
 
-				ctx.fillStyle = colors[shade < 0 ? colors.length - 1 : shade];
+				ctx.globalAlpha = shade < 0 ? 1 : ALPHA[shade];
 				ctx.fillText(glyph.repeat(x - start), start * charW, cy);
 			}
 		}
+
+		ctx.globalAlpha = 1;
 	}
 
 	function frame(now) {
-		if (!t0)
-			t0 = now;
-
 		tFrozen = ((now - t0) / 1000) % SPIN_PERIOD;
 		paint(tFrozen);
-
 		raf = requestAnimationFrame(frame);
 	}
 
-	function shouldRun() {
-		return !paused && visible && onscreen && !reduced.matches;
-	}
-
 	function sync() {
-		if (shouldRun()) {
-			if (!running) {
-				running = true;
-				// keep the phase we stopped at instead of jumping back
-				t0 = performance.now() - tFrozen * 1000;
-				raf = requestAnimationFrame(frame);
-			}
-		} else if (running) {
+		var want = !paused && visible && onscreen && !reduced.matches;
+
+		if (want && !running) {
+			running = true;
+			// keep the phase we stopped at instead of jumping back
+			t0 = performance.now() - tFrozen * 1000;
+			raf = requestAnimationFrame(frame);
+		} else if (!want && running) {
 			running = false;
 			cancelAnimationFrame(raf);
 			paint(tFrozen);
-		} else {
+		} else if (!want) {
 			paint(tFrozen);
 		}
 	}
 
 	function buildControls() {
 		var host = document.getElementById('shapes');
-		var title = document.getElementById('demo-title');
 		var mem = new Uint8Array(wasm.memory.buffer);
 
 		var read = function (p) {
@@ -170,26 +148,24 @@
 			return s;
 		};
 
-		var n = wasm.cube_shape_count();
 		var btns = [];
+		var n = wasm.cube_shape_count();
 
 		for (var i = 0; i < n; i++) {
-			var name = read(wasm.cube_shape_name(i));
 			var b = document.createElement('button');
 
 			b.type = 'button';
-			b.textContent = name;
+			b.className = 'shape';
+			b.textContent = read(wasm.cube_shape_name(i));
 			b.setAttribute('aria-pressed', String(i === 0));
 			b.dataset.index = String(i);
-			b.dataset.name = name;
 
 			b.addEventListener('click', function () {
-				shape = Number(this.dataset.index);
+				var self = this;
+				shape = Number(self.dataset.index);
 				btns.forEach(function (o) {
-					o.setAttribute('aria-pressed', String(o === this));
-				}, this);
-				if (title)
-					title.textContent = 'cube --' + this.dataset.name;
+					o.setAttribute('aria-pressed', String(o === self));
+				});
 				if (!running)
 					paint(tFrozen);
 			});
@@ -205,13 +181,12 @@
 		if (toggle) {
 			toggle.addEventListener('click', function () {
 				paused = !paused;
-				toggle.classList.toggle('paused', paused);
-				toggle.setAttribute('aria-label', paused ? 'Play animation' : 'Pause animation');
-				toggle.title = paused ? 'Play' : 'Pause';
+				toggle.textContent = paused ? 'play' : 'pause';
+				toggle.setAttribute('aria-pressed', String(paused));
 				sync();
 			});
 			if (reduced.matches) {
-				toggle.classList.add('paused');
+				toggle.textContent = 'play';
 				toggle.disabled = true;
 			}
 		}
@@ -222,8 +197,8 @@
 		});
 
 		if ('IntersectionObserver' in window) {
-			new IntersectionObserver(function (entries) {
-				onscreen = entries[0].isIntersecting;
+			new IntersectionObserver(function (e) {
+				onscreen = e[0].isIntersecting;
 				sync();
 			}, { threshold: 0 }).observe(canvas);
 		}
@@ -235,61 +210,49 @@
 		else
 			addEventListener('resize', relayout);
 
-		addEventListener('themechange', function () {
-			pickColors();
-			paint(tFrozen);
-		});
-
 		if (reduced.addEventListener)
 			reduced.addEventListener('change', sync);
 
-		document.fonts && document.fonts.ready.then(relayout);
-	}
-
-	function start(exports) {
-		wasm = exports;
-		maxW = wasm.cube_max_width();
-		maxH = wasm.cube_max_height();
-
-		pickColors();
-		buildControls();
-		wire();
-
-		if (!layout()) {
-			fail('could not size the canvas');
-			return;
-		}
-
-		sync();
+		if (document.fonts)
+			document.fonts.ready.then(relayout);
 	}
 
 	function load() {
 		var url = 'wasm/cube.wasm';
+		var buffered = function () {
+			return fetch(url)
+				.then(function (r) { return r.arrayBuffer(); })
+				.then(function (b) { return WebAssembly.instantiate(b, {}); });
+		};
 
-		if (WebAssembly.instantiateStreaming) {
-			return WebAssembly.instantiateStreaming(fetch(url), {})
-				.catch(function () {
-					// wrong MIME type from the host; fall back to the buffer path
-					return fetch(url).then(function (r) { return r.arrayBuffer(); })
-						.then(function (b) { return WebAssembly.instantiate(b, {}); });
-				});
-		}
-
-		return fetch(url)
-			.then(function (r) { return r.arrayBuffer(); })
-			.then(function (b) { return WebAssembly.instantiate(b, {}); });
+		// instantiateStreaming needs application/wasm; fall back if the host lies
+		return WebAssembly.instantiateStreaming
+			? WebAssembly.instantiateStreaming(fetch(url), {}).catch(buffered)
+			: buffered();
 	}
 
 	if (!window.WebAssembly || !canvas.getContext) {
-		fail('this browser has no WebAssembly, so the cube stayed home.');
+		fail('this browser has no WebAssembly.');
 		return;
 	}
 
 	load().then(function (res) {
-		start(res.instance.exports);
+		wasm = res.instance.exports;
+		maxW = wasm.cube_max_width();
+		maxH = wasm.cube_max_height();
+
+		buildControls();
+		wire();
+
+		if (!layout()) {
+			fail('could not size the canvas.');
+			return;
+		}
+
+		sync();
 	}, function () {
 		fail(location.protocol === 'file:'
-			? 'serve this page over http to load cube.wasm (file:// blocks it).'
+			? 'serve this over http to load cube.wasm (file:// blocks it).'
 			: 'could not load cube.wasm.');
 	});
 })();
