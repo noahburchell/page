@@ -34,22 +34,22 @@ app-misc/claude-desktop   PROPRIETARY, repackaged anthropic's official .deb</cod
 		<details class="drop">
 			<summary>with eselect repository</summary>
 			<pre><code>emerge --ask app-eselect/eselect-repository
-eselect repository add noahburchell git https://github.com/noahburchell/noahburchell-overlay.git
-emaint sync --repo noahburchell</code></pre>
+eselect repository add nburch git https://github.com/noahburchell/nburch-overlay.git
+emaint sync --repo nburch</code></pre>
 		</details>
 	</section>
 
 	<section id="manual">
 		<details class="drop">
 			<summary>manually</summary>
-			<p>create <code>/etc/portage/repos.conf/noahburchell.conf</code>:</p>
-			<pre><code>[noahburchell]
-location = /var/db/repos/noahburchell
+			<p>create <code>/etc/portage/repos.conf/nburch.conf</code>:</p>
+			<pre><code>[nburch]
+location = /var/db/repos/nburch
 sync-type = git
-sync-uri = https://github.com/noahburchell/noahburchell-overlay.git
+sync-uri = https://github.com/noahburchell/nburch-overlay.git
 auto-sync = yes</code></pre>
 			<p>then:</p>
-			<pre><code>emaint sync --repo noahburchell</code></pre>
+			<pre><code>emaint sync --repo nburch</code></pre>
 		</details>
 	</section>
 
