@@ -177,7 +177,7 @@ code {
 	margin-top: 32px;
 }
 
-/* inline-block so ninit's line-through does not reach the punctuation */
+/* inline-block so a wip link's line-through does not reach the punctuation */
 .project-desc + .project-link::before,
 .project-link + .project-link::before,
 .project-link:last-child::after {

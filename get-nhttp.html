@@ -23,7 +23,7 @@
 	<section id="gentoo">
 		<details class="drop">
 			<summary>gentoo</summary>
-			<p>the only place it is packaged.</p>
+			<p>the only place it is packaged</p>
 			<pre><code>emerge --ask app-eselect/eselect-repository
 eselect repository add nburch git https://github.com/noahburchell/nburch-overlay.git
 emaint sync --repo nburch
@@ -35,7 +35,7 @@ emerge --ask app-misc/nhttp</code></pre>
 		<details class="drop">
 			<summary>source</summary>
 			<p>linux only. you need make and gcc or clang (c11, plus
-			<code>-fstack-clash-protection</code> and <code>-fcf-protection=full</code>, so gcc 8+ or clang 11+).</p>
+			<code>-fstack-clash-protection</code> and <code>-fcf-protection=full</code>, so gcc 8+ or clang 11+)</p>
 
 			<h3>get the source</h3>
 			<p>grab the release tarball:</p>
@@ -53,7 +53,7 @@ sudo make install</code></pre>
 			<p>that puts the binary in <code>/usr/bin</code>. to put it somewhere else:</p>
 			<pre><code>make install PREFIX="$HOME/.local" # make sure its in path</code></pre>
 			<p><code>BINDIR</code> and <code>DESTDIR</code> work too. <code>make uninstall</code> removes it,
-			<code>make clean</code> drops the binary.</p>
+			<code>make clean</code> drops the binary</p>
 			<p>the hardening flags are set by the makefile and are not optional. <code>CC</code>,
 			<code>CFLAGS</code>, <code>CPPFLAGS</code> and <code>LDFLAGS</code> are appended to, so overriding
 			them is safe:</p>
@@ -66,14 +66,26 @@ sudo make install</code></pre>
 			<summary>usage</summary>
 			<pre><code>nhttp &lt;docroot&gt;</code></pre>
 			<p>serves that dir. any dir path resolves to its <code>index.html</code>. GET and HEAD
-			only, everything else is a 405.</p>
+			only, everything else is a 405 with an <code>Allow: GET, HEAD</code> header. a dir with
+			no index.html is a 404, not a 403, and symlinks pointing outside the docroot are
+			refused with 403. dotfiles are served like anything else</p>
 			<p>it listens on port 80, so it needs root or the net_bind_service capability:</p>
 			<pre><code>sudo setcap cap_net_bind_service=+ep /usr/bin/nhttp</code></pre>
 			<p>that is the recommended way. nhttp does not drop privileges, so under <code>sudo</code>
-			every forked request handler stays root.</p>
+			every forked request handler stays root</p>
 			<p>the port, the 10s read/write timeout, the 8192 byte header cap and the 128
 			connection limit are compile-time constants. changing them means editing
-			<code>src/main.c</code> and rebuilding. it is ipv4 only.</p>
+			<code>src/main.c</code> and rebuilding. it is ipv4 only</p>
+			<p>the 10s bound covers the whole request-header phase rather than one read, so a
+			client dribbling bytes cannot hold a process open, and it drops the connection
+			rather than answering 408. headers over 8192 bytes get a 431. while all 128 slots
+			are busy the listener stops accepting until one frees: that is backpressure, not
+			failure, and every slot is time bounded so it always recovers</p>
+			<p><code>/about</code> serves <code>/about/index.html</code> without redirecting to
+			<code>/about/</code>, so relative links inside it resolve against <code>/</code>. use
+			absolute hrefs or trailing slashes. that is deliberate, emitting a
+			<code>Location</code> would mean reflecting the request path back into a response
+			header</p>
 		</details>
 	</section>
 

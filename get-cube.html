@@ -17,7 +17,7 @@
 
 	<section class="intro">
 		<h1>installing cube</h1>
-		<p>spinning cube (and the other platonic solids) for your terminal</p>
+		<p>spinning cube (and the other platonic solids) for your terminal. latest release v1.2.1</p>
 	</section>
 
 	<section id="gentoo">
@@ -36,15 +36,15 @@ cube --help</code></pre>
 			<summary>nix</summary>
 
 			<p>run it without installing anything:</p>
-			<pre><code>nix run github:noahburchell/cube
-nix run github:noahburchell/cube -- --icosahedron</code></pre>
+			<pre><code>nix run github:noahburchell/cube/v1.2.1
+nix run github:noahburchell/cube/v1.2.1 -- --icosahedron</code></pre>
 
 			<p>install it into your profile:</p>
-			<pre><code>nix profile install github:noahburchell/cube</code></pre>
+			<pre><code>nix profile install github:noahburchell/cube/v1.2.1</code></pre>
 
 			<p>or add it to a flake:</p>
 			<pre><code>{
-  inputs.cube.url = "github:noahburchell/cube";
+  inputs.cube.url = "github:noahburchell/cube/v1.2.1";
 
   # then, in your config:
   #   environment.systemPackages = [ inputs.cube.packages.${pkgs.system}.default ];
@@ -52,13 +52,27 @@ nix run github:noahburchell/cube -- --icosahedron</code></pre>
   #   nixpkgs.overlays = [ inputs.cube.overlays.default ];
   #   environment.systemPackages = [ pkgs.cube ];
 }</code></pre>
+
+			<p>or hack on it (a shell with a compiler, make, bear, clangd and a debugger):</p>
+			<pre><code>nix develop
+make</code></pre>
+		</details>
+	</section>
+
+	<section id="arch">
+		<details class="drop">
+			<summary>arch</summary>
+			<p>you need <code>base-devel</code></p>
+			<pre><code>curl -LO https://github.com/noahburchell/cube/releases/download/v1.2.1/PKGBUILD
+less PKGBUILD   # if you want to read it first
+makepkg -si</code></pre>
 		</details>
 	</section>
 
 	<section id="brew">
 		<details class="drop">
 			<summary>brew (macos)</summary>
-			<p>you need xcode 16.3+ (apple clang 17).</p>
+			<p>you need xcode 16.3+ (apple clang 17)</p>
 			<pre><code>brew install noahburchell/cube/cube</code></pre>
 		</details>
 	</section>
@@ -66,13 +80,13 @@ nix run github:noahburchell/cube -- --icosahedron</code></pre>
 	<section id="source">
 		<details class="drop">
 			<summary>source</summary>
-			<p>you need make (<code>gmake</code> on the bsds) and gcc 14+ or clang 19+.</p>
+			<p>you need make (<code>gmake</code> on the bsds) and gcc 14+ or clang 19+</p>
 
 			<h3>get the source</h3>
 			<p>grab the release tarball:</p>
-			<pre><code>curl -LO https://github.com/noahburchell/cube/archive/refs/tags/v1.2.tar.gz
-tar xf v1.2.tar.gz
-cd cube-1.2</code></pre>
+			<pre><code>curl -LO https://github.com/noahburchell/cube/releases/download/v1.2.1/cube-1.2.1.tar.gz
+tar xf cube-1.2.1.tar.gz
+cd cube-1.2.1</code></pre>
 
 			<p>or clone the repo:</p>
 			<pre><code>git clone --depth 1 https://github.com/noahburchell/cube.git
@@ -107,7 +121,7 @@ sudo gmake install
 cube --help</code></pre>
 				<p>freebsd 14.2+ has a new enough clang in base. on openbsd and netbsd, install one
 				from packages/pkgsrc and the makefile will find it on its own: it looks for
-				<code>clang19</code>, <code>clang20</code>, <code>gcc14</code>, <code>gcc15</code> and <code>egcc</code> on path.</p>
+				<code>clang19</code>, <code>clang20</code>, <code>gcc14</code>, <code>gcc15</code> and <code>egcc</code> on path</p>
 			</details>
 		</details>
 	</section>

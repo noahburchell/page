@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ninit</title>
+<meta name="description" content="how to install ninit">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+	<a class="brand" href="/">nburch.org</a>
+</header>
+
+<main class="main doc">
+
+	<section class="intro">
+		<h1>installing ninit</h1>
+		<p>small init for linux. one file per service, a dependency graph compiled ahead of
+		boot, cgroup tracking and a control socket. current release 1.0.1</p>
+	</section>
+
+	<section id="gentoo">
+		<details class="drop">
+			<summary>gentoo</summary>
+			<pre><code>emerge --ask app-eselect/eselect-repository
+eselect repository add nburch git https://github.com/noahburchell/nburch-overlay.git
+emaint sync --repo nburch
+emerge --ask sys-apps/ninit</code></pre>
+			<p>the use flags are <code>o3</code>, <code>lto</code>, <code>native</code>, <code>quiet</code>,
+			<code>authshell</code>, <code>busybox</code>, <code>tools</code> and <code>debug</code>. they map
+			to the configure options below. ninit selects its own optimisation flags from them, so
+			<code>CFLAGS</code> and <code>LDFLAGS</code> in make.conf are ignored. example service files
+			are installed to <code>/usr/share/doc/ninit-*/ninit.d</code></p>
+		</details>
+	</section>
+
+	<section id="source">
+		<details class="drop">
+			<summary>source</summary>
+			<p>linux only. make is required. the source is c23, so gcc 14 or newer, or clang 18 or
+			newer</p>
+
+			<h3>get the source</h3>
+			<p>the release tarball</p>
+			<pre><code>curl -LO https://github.com/noahburchell/ninit/releases/download/v1.0.1/ninit-1.0.1.tar.xz
+tar xf ninit-1.0.1.tar.xz
+cd ninit-1.0.1</code></pre>
+			<p>the source code archive on the tags page contains no configure script and has to be
+			bootstrapped with <code>./autogen.sh</code> first</p>
+
+			<h3>build it</h3>
+			<pre><code>./configure --prefix=/usr
+make -j"$(nproc)"
+sudo make install
+sudo make tools-install</code></pre>
+			<p><code>--prefix=/usr</code> is correct for a system install. <code>tools-install</code> is
+			optional and is described under shutting down</p>
+			<p>out of tree builds work and leave the source directory clean</p>
+			<pre><code>mkdir build &amp;&amp; cd build &amp;&amp; ../configure &amp;&amp; make</code></pre>
+			<p><code>make V=1</code> prints the plain automake recipe. for an initramfs, link it
+			statically with <code>./configure LDFLAGS=-static</code></p>
+
+			<details class="drop">
+				<summary>configure options</summary>
+				<pre><code>--enable-o3            -O3 instead of -O2
+--enable-lto           link time optimisation
+--enable-native        -march=native
+--enable-quiet         only WARN and FAIL on the console during boot
+--enable-authshell     run sulogin for recovery when root has a usable password
+                       hash, plain shell when it doesn't
+--with-busybox[=PATH]  try busybox before /bin/sh for the emergency shell
+--with-shell=PATH      the interpreter service scripts are written for
+--with-shell-name=NAME what to call it
+--with-service-dir=DIR where service files live, default /etc/ninit.d
+--enable-werror        turn warnings into errors
+--enable-debug         -O0 with ASan and UBSan, testing only, never pid 1</code></pre>
+				<p>service scripts are compiled as programs for <code>/bin/bash</code>. there is no
+				fallback to another shell, because the same text under a different shell is a
+				different program. <code>--with-shell=/bin/dash --with-shell-name=dash</code> changes
+				the interpreter</p>
+			</details>
+		</details>
+	</section>
+
+	<section id="services">
+		<details class="drop">
+			<summary>service files</summary>
+			<p>each service is one file in <code>/etc/ninit.d</code>, named after the service. the
+			file is a bash script. directives are <code>#%key: value</code> comments. every directive
+			must precede the first command. a directive placed after code is an error</p>
+			<pre><code>#!/bin/bash
+#%type: daemon            oneshot (default), daemon, or target
+#%depon: fs, udev         services that must be complete first
+#%depof: multi-user       services that must wait for this one
+#%onfail: stop            warn, stop, shell
+#%restart: always         daemon only: respawn after it has reported ready
+#%notify: 3               daemon only: ready once it writes a newline to this fd
+#%start-timeout: 90s      how long it may take to become ready (default 90s)
+#%stop-timeout: 5s        how long it gets after SIGTERM before SIGKILL (5s)
+#%start-tries: 2          attempts before onfail decides (oneshot 1, daemon 2)
+#%start-delay: 0s         wait between those attempts (default none)
+#%deps: uptime            uptime (default) or order</code></pre>
+			<p>durations take <code>ms</code>, <code>s</code>, <code>m</code> or <code>h</code>, or a plain
+			count of milliseconds</p>
+			<p>a oneshot service is complete when it exits 0. a daemon is complete when it writes a
+			newline to its notify fd, or immediately after spawn when it has none. a target has no
+			commands and is complete when its dependencies are</p>
+
+			<details class="drop">
+				<summary>rules</summary>
+				<p><code>start-tries</code> bounds startup. <code>restart</code> is supervision and
+				begins only after a daemon has reported ready. a daemon that exits before reporting
+				ready is not respawned</p>
+				<p><code>deps: uptime</code> permits a dependent to start only while the service is
+				up. <code>deps: order</code> requires only that the service has started once. the
+				directive is set on the service that others depend on</p>
+				<p>a target goes down when anything behind it dies, and so does everything waiting
+				on it. with no <code>onfail</code> directive the default is <code>stop</code> when
+				another service depends on this one and <code>warn</code> when none does</p>
+				<p>each service gets its own cgroup under
+				<code>/sys/fs/cgroup/ninit.services</code> and is killed with <code>cgroup.kill</code>,
+				so <code>setsid()</code> does not escape it. on linux 5.7 and later a service is
+				forked directly into its cgroup, otherwise it joins immediately after the fork.
+				without cgroup v2 ninit falls back to the process group and reports that it has done
+				so</p>
+				<p>services run with stdin on <code>/dev/null</code>, stdout and stderr through
+				ninit, and only <code>PATH</code>, <code>HOME=/</code> and <code>TERM=linux</code> in
+				the environment. each runs in its own session with no controlling terminal. console
+				output is prefixed with the service name, and the last KiB is printed on
+				failure</p>
+			</details>
+
+			<details class="drop">
+				<summary>daemons</summary>
+				<p>a daemon must remain in the foreground. <code>exec</code> the real binary with the
+				flag that suppresses daemonising, usually <code>-n</code>, <code>--nofork</code> or
+				<code>--foreground</code>. a script that forks and returns is recorded as complete and
+				then treated as dead. a readiness probe belongs in a background subshell of the same
+				script, which writes the newline while the main shell execs the daemon</p>
+				<pre><code>#!/bin/bash
+#%depon: tmpfiles-dev
+#%type: daemon
+#%notify: 3
+#%restart: always
+{
+	SECONDS=0
+	while ((SECONDS &lt; 15)); do
+		if udevadm control --ping --timeout=1 &gt;/dev/null 2&gt;&amp;1; then
+			echo &gt;&amp;3
+			exit 0
+		fi
+		sleep 0.05
+	done
+	echo "udev: no ping reply in 15s, reporting it up unverified" &gt;&amp;2
+	echo &gt;&amp;3
+} &amp;
+exec 3&gt;&amp;- /sbin/udevd</code></pre>
+				<p>a shell on the console has to acquire the tty itself. a getty does this
+				already</p>
+				<pre><code>#%type: daemon
+exec setsid -c bash -i &lt; /dev/console &gt; /dev/console 2&gt;&amp;1</code></pre>
+				<p>further examples are in <code>docs/ninit.d</code>. they are written for one machine
+				and are not meant to be booted unmodified</p>
+			</details>
+		</details>
+	</section>
+
+	<section id="ninitctl">
+		<details class="drop">
+			<summary>ninitctl</summary>
+			<p>the graph is compiled from the service directory, and has to be recompiled after
+			every change to a service file</p>
+			<pre><code>ninitctl init -n         # check everything, write nothing
+ninitctl init            # compile /etc/ninit.d into /etc/ninit.d/depgraph
+ninitctl show -v         # print the compiled graph and scripts
+ninitctl add|del NAME... # move services between /etc/ninit.d and /etc/ninit.d/unused</code></pre>
+			<p><code>init</code> validates each script with <code>bash -n</code> before publishing, so
+			a syntax error is reported at build time rather than at boot. <code>--no-check</code>
+			skips the validation. one exclusive lock covers reading and publishing, and
+			<code>add</code> and <code>del</code> take the same lock, so a build always observes one
+			coherent revision of the directory</p>
+
+			<p>the runtime commands use <code>/run/ninit/control</code> and require root</p>
+			<pre><code>ninitctl status [NAME]   # what ninit is running
+ninitctl log             # failures ninit recorded
+ninitctl start NAME      # start it, or retry it after a failure
+ninitctl stop NAME       # stop it and keep it stopped
+ninitctl restart NAME    # restart it
+ninitctl resume          # retry every failed and skipped service</code></pre>
+			<p>an operation is owned by the service rather than by the connection that requested it,
+			so killing the client does not leave a stop half applied. a service counts as stopped
+			when its whole cgroup is empty, not when its main process has exited</p>
+			<p>ninit reads the graph once at boot. a recompiled graph takes effect at the next boot,
+			and <code>resume</code> retries with the graph already loaded</p>
+			<p>console output is dropped when it cannot keep up. failure lines are also kept in a
+			small ring that <code>ninitctl log</code> reads back, which is where a failure reason is
+			recorded when the console lost it, or when ninit was built with
+			<code>--enable-quiet</code></p>
+			<p>the depgraph format is versioned and checked exactly. run <code>ninitctl init</code>
+			after upgrading ninit and before rebooting. an older graph is refused and the boot enters
+			the emergency shell</p>
+		</details>
+	</section>
+
+	<section id="shutdown">
+		<details class="drop">
+			<summary>shutting down</summary>
+			<pre><code>kill -TERM 1   # reboot (also ctrl-alt-del)
+kill -USR2 1   # poweroff
+kill -USR1 1   # halt</code></pre>
+			<p>busybox <code>reboot</code>, <code>poweroff</code> and <code>halt</code> send the same
+			signals</p>
+			<p>services are stopped in dependency order across the whole graph. a service is not
+			signalled until everything depending on it has gone. independent branches stop in
+			parallel, and each service gets its own <code>stop-timeout</code> before SIGKILL. ninit
+			then SIGTERMs whatever is left, waits 5s, SIGKILLs, syncs, and remounts filesystems
+			read-only</p>
+			<p><code>tools/shutdown.c</code> builds one binary that answers to <code>shutdown</code>,
+			<code>poweroff</code>, <code>halt</code>, <code>reboot</code> and <code>telinit</code> by
+			inspecting <code>argv[0]</code>, the way sysvinit and busybox do. on gentoo it is
+			controlled by <code>USE=tools</code>, which is enabled by default</p>
+			<pre><code>make tools-install   # save the originals as NAME.old, install ours
+make tools-uninstall # put the originals back</code></pre>
+			<p><code>reboot</code> is <code>shutdown -r</code>, <code>poweroff</code> is
+			<code>shutdown -h</code>, and <code>halt</code> is <code>shutdown -H</code>.
+			<code>telinit</code> accepts only 0 and 6. TIME is <code>now</code>,
+			<code>+MINUTES</code> or <code>HH:MM</code>. a delayed shutdown waits in the foreground
+			and is cancelled with ctrl-c. <code>-f</code> bypasses ninit and calls
+			<code>reboot(2)</code> after a sync</p>
+			<p>root signals ninit directly. an unprivileged caller asks elogind over D-Bus through
+			<code>dbus-send</code> and polkit decides, which is what systemd's own
+			<code>poweroff</code> does</p>
+			<p>when pid 1 is not ninit the binary hands over to the saved <code>NAME.old</code>
+			binary, so it can stay installed on a machine that also boots another init.
+			<code>tools-install</code> does not overwrite an existing <code>NAME.old</code>, so
+			running it twice is safe, and it leaves <code>/sbin/init</code> alone. a desktop does not
+			need any of this directly</p>
+		</details>
+	</section>
+
+	<section id="emergency">
+		<details class="drop">
+			<summary>emergency shell</summary>
+			<p>the emergency shell runs when the graph is missing or corrupt, or when a service with
+			<code>onfail: shell</code> exhausts its start-tries. it is a root shell on the console and
+			is respawned when it exits. it is <code>/bin/sh</code>, or busybox when ninit was built
+			with it. ninit does not block while the shell runs, and <code>ninitctl</code> works from
+			it</p>
+			<p>by default the shell is unauthenticated, which is the same bargain sysvinit and
+			busybox make. <code>--enable-authshell</code> puts sulogin in front of it when root has a
+			usable password hash. a serial console or a BMC should be treated as a root
+			credential</p>
+		</details>
+	</section>
+
+	<section id="boot">
+		<details class="drop">
+			<summary>booting with it</summary>
+			<p>write the service files into <code>/etc/ninit.d</code> and compile them</p>
+			<pre><code>sudo ninitctl init -n   # fix anything it reports
+sudo ninitctl init      # compile the graph</code></pre>
+			<p>for the first boot, leave the existing init installed and select ninit on the kernel
+			command line rather than replacing <code>/sbin/init</code></p>
+			<pre><code>init=/sbin/ninit</code></pre>
+			<p>one entry from a working configuration</p>
+			<pre><code>title     Gentoo Linux 7.3 (ninit)
+version   7.3-lychee
+linux     /vmlinuz-7.3.0-rc2-lychee
+options   root=PARTUUID=168ebf8f-0d2d-4ca0-be3a-8216307cb6ba init=/sbin/ninit rootfstype=btrfs rootflags=subvol=@ rw fbcon=nodefer iommu=pt amdgpu.ppfeaturemask=0xfff7ffff</code></pre>
+		</details>
+	</section>
+
+</main>
+
+<footer class="site-footer">
+	<p class="status">(c) 2026 noah burchell</p>
+</footer>
+
+</body>
+</html>

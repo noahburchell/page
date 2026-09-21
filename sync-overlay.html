@@ -24,9 +24,14 @@
 		<details class="drop">
 			<summary>packages</summary>
 			<pre><code>app-misc/cube             spinning cube (and platonic solids)
+sys-apps/ninit            small init
 app-misc/nhttp            minimal http server
 app-misc/vufetch          very useful fetch (live ebuild only, no release yet)
-app-misc/claude-desktop   PROPRIETARY, repackaged anthropic's official .deb</code></pre>
+app-misc/claude-desktop   PROPRIETARY, repackaged anthropic's official .deb
+virtual/service-manager   patched to accept sys-apps/ninit</code></pre>
+			<p><code>virtual/service-manager</code> is the gentoo ebuild with ninit added to the
+			list it accepts, so a machine running ninit satisfies it without openrc or systemd
+			installed. cube and ninit also have <code>-9999</code> live ebuilds that build from git</p>
 		</details>
 	</section>
 
@@ -56,7 +61,8 @@ auto-sync = yes</code></pre>
 	<section id="installing">
 		<details class="drop">
 			<summary>installing</summary>
-			<pre><code>emerge --ask app-misc/cube</code></pre>
+			<pre><code>emerge --ask app-misc/cube
+emerge --ask sys-apps/ninit   # then see nburch.org/get-ninit.html</code></pre>
 			<p><code>app-misc/claude-desktop</code> is proprietary, so portage will refuse to merge it
 			until you accept the licence:</p>
 			<pre><code>echo 'app-misc/claude-desktop all-rights-reserved' >> /etc/portage/package.license
